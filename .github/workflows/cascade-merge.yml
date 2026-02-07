@@ -1,0 +1,40 @@
+---
+name: 🔄 Hotfix Cascading Auto-Merge
+
+on:
+  pull_request:
+    types:
+      - closed
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  cascade-merge:
+    name: Cascade Merge to Release Branches
+    runs-on: ubuntu-latest
+
+    # Solo ejecutar si:
+    # 1. PR fue mergeado (no cerrado sin merge)
+    # 2. Branch origen empieza con 'release/' o es un hotfix
+    if: |
+      github.event.pull_request.merged == true &&
+      (startsWith(github.head_ref, 'release/') || startsWith(github.head_ref, 'hotfix/'))
+
+    steps:
+      - name: 📝 Info del PR
+        run: |
+          echo "PR #${{ github.event.pull_request.number }} mergeado"
+          echo "Branch origen: ${{ github.head_ref }}"
+          echo "Branch destino: ${{ github.base_ref }}"
+
+      - name: 🚀 Cascading Auto-Merge
+        uses: ActionsDesk/cascading-downstream-merge@v3.0.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Si tienes protected branches, usa:
+          # merge_token: ${{ secrets.MERGE_TOKEN }}
+          prefixes: release/
+          ref_branch: develop  # Branch final de la cascada
