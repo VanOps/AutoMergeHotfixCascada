@@ -11,12 +11,6 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Verificar que estamos en un repo git
-if [ ! -d .git ]; then
-    echo -e "${RED}❌ Error: No estás en un repositorio git${NC}"
-    exit 1
-fi
-
 # Verificar que existe develop
 if ! git show-ref --verify --quiet refs/heads/develop; then
     echo -e "${YELLOW}⚠️  Rama 'develop' no existe. Creándola...${NC}"

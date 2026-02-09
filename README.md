@@ -10,41 +10,76 @@ Este submódulo contiene una implementación completa de la estrategia de **Hotf
 │   └── workflows/
 │       ├── cascade-merge.yml    # Workflow principal de cascada automática
 │       └── setup-ci.yml         # CI/CD para validar cambios
+├── scripts/                     # Scripts de gestión
+│   ├── check_repo_config.sh    # Validar configuración del repositorio
+│   ├── create-hotfix-pr.sh     # Crear rama hotfix interactivamente
+│   └── setup-release-branches.sh # Crear estructura de ramas de release
 ├── src/                         # Aplicación Next.js de ejemplo
 │   ├── app/                     # App Router de Next.js
 │   ├── public/                  # Archivos estáticos
 │   └── package.json             # Dependencias de Next.js
-├── setup-release-branches.sh   # Script para crear ramas de release
 └── README.md
 
 ```
 
 ## 🚀 Inicio Rápido
 
-### 1. Configurar Ramas de Release
+### 1. Verificar Configuración
+
+Antes de empezar, verifica que tu repositorio está configurado correctamente:
+
+```bash
+./scripts/check_repo_config.sh
+```
+
+Este script valida:
+
+- Permisos de GitHub Actions
+- Configuración de merge
+- Workflows requeridos
+- Ramas de release
+
+### 2. Configurar Ramas de Release
 
 Ejecuta el script de configuración para crear la estructura de ramas:
 
 ```bash
-./setup-release-branches.sh
+./scripts/setup-release-branches.sh
 ```
 
 Esto creará:
+
 - `release/1.0`
 - `release/1.1`
 - `release/2.0`
 - `develop` (si no existe)
 
-### 2. Configurar GitHub
+### 3. Configurar GitHub
 
 **En Settings > Actions > General > Workflow permissions**:
+
 - ✅ Read and write permissions
 - ✅ Allow GitHub Actions to create and approve pull requests
 
 **En Settings > General > Pull Requests**:
+
 - ❌ Desmarcar "Automatically delete head branches"
 
-### 3. Crear un Hotfix de Prueba
+### 4. Crear un Hotfix de Prueba
+
+**Método 1: Script Interactivo (Recomendado)**
+
+```bash
+./scripts/create-hotfix-pr.sh
+```
+
+Este script te guiará para:
+
+- Seleccionar la rama release base
+- Crear la rama hotfix automáticamente
+- Mostrarte el flujo de cascada que se ejecutará
+
+**Método 2: Manual**
 
 ```bash
 # Crear hotfix desde release/1.0
@@ -61,7 +96,7 @@ git commit -m "fix: Add hotfix version constant"
 git push -u origin hotfix/test-cascade
 ```
 
-### 4. Crear Pull Request
+### 5. Crear Pull Request
 
 1. Ve a GitHub y crea un PR de `hotfix/test-cascade` → `release/1.0`
 2. Espera a que pasen los checks de CI
@@ -118,7 +153,7 @@ Settings > Branches > Add branch protection rule
 Branch name pattern: develop
 
 ☑ Require pull request before merging
-☑ Require status checks to pass: 
+☑ Require status checks to pass:
   - test
   - security-scan
 ```
@@ -138,7 +173,7 @@ Luego, actualiza `cascade-merge.yml`:
 - name: 🚀 Cascading Auto-Merge
   uses: ActionsDesk/cascading-downstream-merge@v3.0.0
   with:
-    merge_token: ${{ secrets.MERGE_TOKEN }}  # Usar en lugar de GITHUB_TOKEN
+    merge_token: ${{ secrets.MERGE_TOKEN }} # Usar en lugar de GITHUB_TOKEN
     prefixes: release/
     ref_branch: develop
 ```
@@ -199,6 +234,53 @@ git add .
 git commit
 git push
 ```
+
+## 🧰 Scripts Disponibles
+
+### check_repo_config.sh
+
+Valida la configuración del repositorio para hotfix cascade:
+
+```bash
+./scripts/check_repo_config.sh [owner/repo]
+```
+
+**Verifica:**
+
+- ✅ Ramas de release (release/1.0, 1.1, 2.0, develop)
+- ✅ Workflows de cascade y CI
+- ✅ Permisos de GitHub Actions
+- ✅ Configuración de merge
+- ⚠️ Configuraciones opcionales (branch protection, MERGE_TOKEN)
+
+### create-hotfix-pr.sh
+
+Creador interactivo de ramas hotfix:
+
+```bash
+./scripts/create-hotfix-pr.sh
+```
+
+**Características:**
+
+- Selección guiada de rama release base
+- Creación automática de rama hotfix/nombre
+- Visualización del flujo de cascada
+- Advertencias sobre propagación automática
+
+### setup-release-branches.sh
+
+Configura la estructura de ramas necesaria:
+
+```bash
+./scripts/setup-release-branches.sh
+```
+
+**Crea:**
+
+- `release/1.0`, `release/1.1`, `release/2.0`
+- `develop` (si no existe)
+- Archivos RELEASE-X.X.md en cada rama
 
 ## 📚 Documentación
 
